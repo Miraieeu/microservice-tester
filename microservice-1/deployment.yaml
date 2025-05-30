@@ -30,6 +30,7 @@ spec:
   ports:
     - port: 3000
       targetPort: 3000
+
 ---
 # Redis
 apiVersion: apps/v1
@@ -93,17 +94,9 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx
-          volumeMounts:
-            - name: web-content
-              mountPath: /usr/share/nginx/html/index.html
-              subPath: index.html
+          image: ms1-frontend:latest
           ports:
             - containerPort: 80
-      volumes:
-        - name: web-content
-          configMap:
-            name: ms1-index
 ---
 apiVersion: v1
 kind: Service
@@ -113,5 +106,7 @@ spec:
   selector:
     app: ms1-frontend
   ports:
-    - port: 80
+    - protocol: TCP
+      port: 80
       targetPort: 80
+

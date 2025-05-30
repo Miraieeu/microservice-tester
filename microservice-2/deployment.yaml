@@ -1,0 +1,117 @@
+# Backend Python Flask
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms2-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms2-backend
+  template:
+    metadata:
+      labels:
+        app: ms2-backend
+    spec:
+      containers:
+        - name: python-backend
+          image: python-backend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms2-backend
+spec:
+  selector:
+    app: ms2-backend
+  ports:
+    - port: 5000
+      targetPort: 5000
+---
+# Redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms2-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms2-redis
+  template:
+    metadata:
+      labels:
+        app: ms2-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms2-redis
+spec:
+  selector:
+    app: ms2-redis
+  ports:
+    - port: 6379
+---
+# Frontend Nginx (dengan ConfigMap)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ms2-index
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>MS2</title></head>
+    <body style="background:#fff3e0;text-align:center;padding:50px">
+      <h1 style="color:#FF5722">Welcome to Microservice 2</h1>
+    </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms2-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms2-frontend
+  template:
+    metadata:
+      labels:
+        app: ms2-frontend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          volumeMounts:
+            - name: web-content
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+          ports:
+            - containerPort: 80
+      volumes:
+        - name: web-content
+          configMap:
+            name: ms2-index
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms2-frontend
+spec:
+  selector:
+    app: ms2-frontend
+  ports:
+    - port: 80
+      targetPort: 80

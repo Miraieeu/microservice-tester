@@ -1,0 +1,14 @@
+service:
+  type: NodePort
+
+server:
+  global:
+    scrape_interval: 15s
+
+additionalScrapeConfigs:
+  - job_name: 'microservice1'
+    static_configs:
+      - targets: ['ms1-backend:3000']
+  - job_name: 'microservice2'
+    static_configs:
+      - targets: ['ms2-backend:5000']
